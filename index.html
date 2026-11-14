@@ -113,7 +113,7 @@
         osc.frequency.setValueAtTime(n.f, start);
         if (n.d > 0.4) osc.frequency.linearRampToValueAtTime(n.f * 0.85, start + n.d);
         gain.gain.setValueAtTime(0.0001, start);
-        gain.gain.exponentialRampToValueAtTime(0.7, start + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.9, start + 0.03);
         gain.gain.exponentialRampToValueAtTime(0.001, start + n.d);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
