@@ -6,7 +6,11 @@
 # 🐍 Snake Game By RO Ni
 
 A fun and interactive Snake Game built using HTML, CSS and JavaScript.
+## 📸 Game Preview
 
+<p align="center">
+  <img src="./screenshot.png" width="80%" alt="Snake Game Preview">
+</p>
 ## 🎮 Features
 - Snake Movement
 - Food Collection
