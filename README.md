@@ -1,4 +1,8 @@
-
+<p align="center">
+  <a href="https://dev-by-roni.github.io/snake-game-by-roni/">
+    🎮 Play Live Demo
+  </a>
+</p>
 # 🐍 Snake Game By RO Ni
 
 A fun and interactive Snake Game built using HTML, CSS and JavaScript.
