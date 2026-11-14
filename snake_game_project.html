@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Snake Game</title>
+</head>
+<body style="text-align:center; background:#3a2b2b; color:white;">
+  <h1>Snake Game By RO Ni</h1>
+  <h2>Score: <span id="score">0</span></h2>
+  <button id="pauseBtn" onclick="togglePause()" style="font-size:18px; padding:8px 20px; margin-bottom:10px; cursor:pointer;">⏸ Pause</button><br>
+  <canvas id="game" width="400" height="400" style="background:rgb(0, 0, 0); border: 10px double silver; border-radius: 20px;"></canvas>
+  <div style="margin-top:15px;">
+    <button class="dir" onclick="go('up')">⬆</button><br>
+    <button class="dir" onclick="go('left')">⬅</button>
+    <button class="dir" onclick="go('down')">⬇</button>
+    <button class="dir" onclick="go('right')">➡</button>
+  </div>
+  <style>
+    .dir { font-size:28px; width:70px; height:60px; margin:4px; border-radius:10px; border:none; background:#2ecc40; touch-action:manipulation; }
+  </style>
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const box = 20;
+
+    let snake = [{ x: 200, y: 200 }];
+    let dx = box;
+    let dy = 0;
+    let score = 0;
+    let paused = false;
+    let bounceTime = 0;
+    let gameOver = false;
+
+    let food = {
+      x: Math.floor(Math.random() * 20) * box,
+      y: Math.floor(Math.random() * 20) * box
+    };
+
+    document.addEventListener("keydown", (e) => {
+      unlockAudio();
+      if (e.key === "ArrowUp" && dy === 0)    { dx = 0; dy = -box; }
+      if (e.key === "ArrowDown" && dy === 0)  { dx = 0; dy = box; }
+      if (e.key === "ArrowLeft" && dx === 0)  { dx = -box; dy = 0; }
+      if (e.key === "ArrowRight" && dx === 0) { dx = box; dy = 0; }
+      if (e.key === " ") togglePause();
+    });
+
+    function gameLoop() {
+      if (paused || gameOver) return;
+      bounceTime += 0.4;
+
+      const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+
+      const hitWall = head.x < 0 || head.y < 0 || head.x >= 400 || head.y >= 400;
+      const hitSelf = snake.some(part => part.x === head.x && part.y === head.y);
+      if (hitWall || hitSelf) {
+        playGameOverSound();
+        gameOver = true;
+        setTimeout(() => {
+          alert("Game Over! Score: " + score);
+          document.location.reload();
+        }, 2200);
+        return;
+      }
+
+      snake.unshift(head);
+
+      if (head.x === food.x && head.y === food.y) {
+        score++;
+        playEatSound();
+        document.getElementById("score").textContent = score;
+        food = {
+          x: Math.floor(Math.random() * 20) * box,
+          y: Math.floor(Math.random() * 20) * box
+        };
+      } else {
+        snake.pop();
+      }
+
+      // পটভূমি
+      ctx.fillStyle = "#1a3a1a";
+      ctx.fillRect(0, 0, 400, 400);
+
+      // খাবার (বড়-ছোট হওয়া আপেল)
+      const pulse = 1 + Math.sin(bounceTime) * 0.35;
+      const radius = (box / 2 - 2) * pulse;
+      ctx.fillStyle = "red";
+      ctx.beginPath();
+      ctx.arc(food.x + box / 2, food.y + box / 2, radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // snaker ar soril
+      snake.forEach((part, i) => {
+        ctx.fillStyle = i % 2 === 0 ? "#2ecc40" : "#1f9e30";
+        ctx.beginPath();
+        ctx.arc(part.x + box / 2, part.y + box / 2, box / 2 - 1, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Snake ar matha
+      const h = snake[0];
+      ctx.fillStyle = "#0b6b1a";
+      ctx.beginPath();
+      ctx.arc(h.x + box / 2, h.y + box / 2, box / 2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // chok
+      ctx.fillStyle = "white";
+      let ex1, ey1, ex2, ey2;
+      if (dx !== 0) {
+        ex1 = h.x + box / 2 + dx / 4; ey1 = h.y + 6;
+        ex2 = h.x + box / 2 + dx / 4; ey2 = h.y + box - 6;
+      } else {
+        ex1 = h.x + 6;       ey1 = h.y + box / 2 + dy / 4;
+        ex2 = h.x + box - 6; ey2 = h.y + box / 2 + dy / 4;
+      }
+      ctx.beginPath(); ctx.arc(ex1, ey1, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(ex2, ey2, 3, 0, Math.PI * 2); ctx.fill();
+
+      // choker moni
+      ctx.fillStyle = "black";
+      ctx.beginPath(); ctx.arc(ex1, ey1, 1.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(ex2, ey2, 1.5, 0, Math.PI * 2); ctx.fill();
+    }
+
+    let audioCtx;
+    function unlockAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === "suspended") audioCtx.resume();
+    }
+    function playEatSound() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === "suspended") audioCtx.resume();
+
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(500, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(2000, audioCtx.currentTime + 0.1);
+
+      gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.15);
+    }
+
+    function playGameOverSound() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === "suspended") audioCtx.resume();
+
+      // নিচের দিকে নামা চারটা নোট: সুর, সময়, দৈর্ঘ্য
+      const notes = [
+        { f: 392, t: 0.0, d: 0.35 },   // সল
+        { f: 330, t: 0.5, d: 0.35 },  // মি
+        { f: 262, t: 0.7, d: 0.35 },   // দো
+        { f: 196, t: 1.05, d: 0.9 }    // নিচু সল (লম্বা)
+      ];
+
+      notes.forEach(n => {
+        const start = audioCtx.currentTime + n.t;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = "triangle"; // নরম শব্দ
+        osc.frequency.setValueAtTime(n.f, start);
+        // শেষ নোটটা একটু নেমে যাবে, বেশি দুঃখী শোনাবে
+        if (n.d > 0.4) {
+          osc.frequency.linearRampToValueAtTime(n.f * 0.85, start + n.d);
+        }
+
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(0.7, start + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + n.d);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(start);
+        osc.stop(start + n.d + 0.05);
+      });
+    }
+    function go(dir) {
+      unlockAudio();
+      if (dir === "up" && dy === 0)    { dx = 0; dy = -box; }
+      if (dir === "down" && dy === 0)  { dx = 0; dy = box; }
+      if (dir === "left" && dx === 0)  { dx = -box; dy = 0; }
+      if (dir === "right" && dx === 0) { dx = box; dy = 0; }
+    }
+    function togglePause() {
+      paused = !paused;
+      const btn = document.getElementById("pauseBtn");
+      btn.textContent = paused ? "▶ Resume" : "⏸ Pause";
+      btn.blur();
+    }
+
+    setInterval(gameLoop, 210);
+    let sx, sy;
+    canvas.addEventListener("touchstart", (e) => {
+      sx = e.touches[0].clientX;
+      sy = e.touches[0].clientY;
+      e.preventDefault();
+    }, { passive: false });
+
+    canvas.addEventListener("touchend", (e) => {
+      const ex = e.changedTouches[0].clientX;
+      const ey = e.changedTouches[0].clientY;
+      const mx = ex - sx, my = ey - sy;
+      if (Math.abs(mx) > Math.abs(my)) {
+        go(mx > 0 ? "right" : "left");
+      } else {
+        go(my > 0 ? "down" : "up");
+      }
+      e.preventDefault();
+    }, { passive: false });
+    
+     document.addEventListener("click", unlockAudio);
+    document.addEventListener("touchstart", unlockAudio);
+  </script>
+</body>
+</html>
