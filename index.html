@@ -2,14 +2,23 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Snake Game</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Snake Game</title>
+  <style>
+    html, body { margin:0; height:100%; overflow:hidden; touch-action:none; }
+    body { display:flex; flex-direction:column; align-items:center; justify-content:center; }
+    h1 { margin:6px 0; font-size:24px; }
+    #game { display:block; }
+    .dir { font-size:24px; width:64px; height:52px; margin:3px; border-radius:10px; border:none; background:#2ecc40; touch-action:manipulation; }
+  </style>
+
 </head>
 <body style="text-align:center; background:#3a2b2b; color:white;">
-  <h1>Snake Game By RO Ni</h1>
-  <h2>Score: <span id="score">0</span></h2>
+  <h1>Snake Game By RO Ni</h1>  
+  <p id="top">Score: <span id="score">0</span></p>
   <button id="pauseBtn" onclick="togglePause()" style="font-size:18px; padding:8px 20px; margin-bottom:10px; cursor:pointer;">⏸ Pause</button><br>
   <canvas id="game" width="400" height="400" style="background:rgb(0, 0, 0); border: 10px double silver; border-radius: 20px;"></canvas>
-  <div style="margin-top:15px;">
+  <div id="pad" style="margin-top:15px;"></div>
     <button class="dir" onclick="go('up')">⬆</button><br>
     <button class="dir" onclick="go('left')">⬅</button>
     <button class="dir" onclick="go('down')">⬇</button>
@@ -35,6 +44,23 @@
       x: Math.floor(Math.random() * 20) * box,
       y: Math.floor(Math.random() * 20) * box
     };
+        function resizeGame() {
+      const pad = document.getElementById("pad");
+      const padH = pad.style.display === "none" ? 0 : pad.offsetHeight;
+      const used = document.querySelector("h1").offsetHeight +
+                   document.getElementById("top").offsetHeight +
+                   document.getElementById("pauseBtn").offsetHeight + padH + 90;
+      const size = Math.max(200, Math.floor(Math.min(window.innerHeight - used, window.innerWidth - 40, 700)));
+      canvas.style.width = size + "px";
+      canvas.style.height = size + "px";
+    }
+
+    const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+    if (!isTouch) document.getElementById("pad").style.display = "none";
+
+    window.addEventListener("resize", resizeGame);
+    window.addEventListener("orientationchange", resizeGame);
+    resizeGame();
 
     document.addEventListener("keydown", (e) => {
       unlockAudio();
@@ -42,7 +68,7 @@
       if (e.key === "ArrowDown" && dy === 0)  { dx = 0; dy = box; }
       if (e.key === "ArrowLeft" && dx === 0)  { dx = -box; dy = 0; }
       if (e.key === "ArrowRight" && dx === 0) { dx = box; dy = 0; }
-      if (e.key === " ") togglePause();
+      if (e.code === "Space" || e.key === "p" || e.key === "P") { e.preventDefault(); togglePause(); }
     });
 
     function gameLoop() {
@@ -155,8 +181,8 @@
       
       const notes = [
         { f: 392, t: 0.0, d: 0.35 },   
-        { f: 330, t: 0.5, d: 0.35 }, 
-        { f: 262, t: 0.7, d: 0.35 },  
+        { f: 330, t: 0.5, d: 0.35 },  
+        { f: 262, t: 0.7, d: 0.35 },   
         { f: 196, t: 1.05, d: 0.9 }    
       ];
 
@@ -167,7 +193,7 @@
 
         osc.type = "triangle"; 
         osc.frequency.setValueAtTime(n.f, start);
-      
+        
         if (n.d > 0.4) {
           osc.frequency.linearRampToValueAtTime(n.f * 0.85, start + n.d);
         }
@@ -215,7 +241,7 @@
       }
       e.preventDefault();
     }, { passive: false });
-    
+
      document.addEventListener("click", unlockAudio);
     document.addEventListener("touchstart", unlockAudio);
   </script>
