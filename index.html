@@ -77,11 +77,11 @@
         snake.pop();
       }
 
-      // পটভূমি
+      
       ctx.fillStyle = "#1a3a1a";
       ctx.fillRect(0, 0, 400, 400);
 
-      // খাবার (বড়-ছোট হওয়া আপেল)
+      
       const pulse = 1 + Math.sin(bounceTime) * 0.35;
       const radius = (box / 2 - 2) * pulse;
       ctx.fillStyle = "red";
@@ -152,12 +152,12 @@
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (audioCtx.state === "suspended") audioCtx.resume();
 
-      // নিচের দিকে নামা চারটা নোট: সুর, সময়, দৈর্ঘ্য
+      
       const notes = [
-        { f: 392, t: 0.0, d: 0.35 },   // সল
-        { f: 330, t: 0.5, d: 0.35 },  // মি
-        { f: 262, t: 0.7, d: 0.35 },   // দো
-        { f: 196, t: 1.05, d: 0.9 }    // নিচু সল (লম্বা)
+        { f: 392, t: 0.0, d: 0.35 },   
+        { f: 330, t: 0.5, d: 0.35 }, 
+        { f: 262, t: 0.7, d: 0.35 },  
+        { f: 196, t: 1.05, d: 0.9 }    
       ];
 
       notes.forEach(n => {
@@ -165,9 +165,9 @@
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
 
-        osc.type = "triangle"; // নরম শব্দ
+        osc.type = "triangle"; 
         osc.frequency.setValueAtTime(n.f, start);
-        // শেষ নোটটা একটু নেমে যাবে, বেশি দুঃখী শোনাবে
+      
         if (n.d > 0.4) {
           osc.frequency.linearRampToValueAtTime(n.f * 0.85, start + n.d);
         }
